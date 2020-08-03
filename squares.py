@@ -113,7 +113,6 @@ def make_square(binary_string, resolution):
     return output
 
 
-# Refactor this to use numpy array not list of lists
 def make_binary_noise(step_number, grid, resolution, feature_size):
     def make_noise(x, y, step_number, resolution, feature_size):
         # Return Simplex Noise of elements mapped to grey-scale
@@ -123,34 +122,28 @@ def make_binary_noise(step_number, grid, resolution, feature_size):
             step_number,
         )
 
-    output = []
-    for x in range(grid[0]):
-        tmp = []
-        for y in range(grid[1]):
-            value = make_noise(x, y, step_number, resolution, feature_size)
-            colour = int(ceil(value))
-            tmp.append(colour)
-        output.append(tmp)
+    output = np.zeros(grid, dtype=int)
+    for ix, iy in np.ndindex(output.shape):
+        value = make_noise(ix, iy, step_number, resolution, feature_size)
+        colour = int(ceil(value))
+        output[ix, iy] = colour
     return output
 
 
-# Refactor this to use numpy array not list of lists
-def binary_to_nibble(data, resolution, feature_size):
-    output = []
-    for x_idx, row in enumerate(data):
-        if x_idx == len(data) - 1:
+def binary_to_nibble(data, resolution):
+    offset_grid = tuple(int(x - 1) for x in grid)
+    output = np.zeros(offset_grid, dtype=np.dtype(("U", 4)))
+    for ix, iy in np.ndindex(output.shape):
+
+        if ix == len(data) - 1 or iy == len(data) - 1:
             continue
-        tmp = []
-        for y_idx, value in enumerate(row):
-            if y_idx == len(row) - 1:
-                continue
-            tmp.append(
-                str(data[x_idx][y_idx])
-                + str(data[x_idx + 1][y_idx])
-                + str(data[x_idx + 1][y_idx + 1])
-                + str(data[x_idx][y_idx + 1])
-            )
-        output.append(tmp)
+
+        output[ix, iy] = (
+            str(data[ix][iy])
+            + str(data[ix + 1][iy])
+            + str(data[ix + 1][iy + 1])
+            + str(data[ix][iy + 1])
+        )
     return output
 
 
@@ -171,7 +164,7 @@ def marching_squares_step(step_number, resolution, feature_size, image_size):
 
     surface = np.zeros(image_size)
     binary_noise = make_binary_noise(step_number, grid, resolution, feature_size)
-    nibble_noise = binary_to_nibble(binary_noise, resolution, feature_size)
+    nibble_noise = binary_to_nibble(binary_noise, resolution)
 
     for x_idx, row in enumerate(nibble_noise):
         for y_idx, value in enumerate(row):
