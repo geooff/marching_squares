@@ -4,7 +4,9 @@ from scipy.interpolate import interp1d
 from PIL import Image
 import imageio
 from math import ceil, floor
-import datetime
+from datetime import datetime
+
+start = datetime.now()
 
 noise = OpenSimplex()
 
@@ -191,3 +193,6 @@ if record:
     for filename in names:
         images.append(imageio.imread(filename))
     imageio.mimsave(f"size-{feature_size}_speed-{noise_speed}.gif", images)
+
+end = datetime.now()
+print(f"Finished execution, ran for {str(end-start)}")
