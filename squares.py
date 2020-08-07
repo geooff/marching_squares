@@ -12,10 +12,10 @@ from PIL import Image
 import imageio
 
 image_size = (400, 400)  # The resolution of the final image
-gif_length = 100
+gif_length = 10
 
 resolution = 5
-feature_size = 24
+feature_size = 50
 noise_speed = 0.05
 
 grid = tuple(int(x / resolution) for x in image_size)
@@ -110,13 +110,14 @@ def make_square(binary_string: str, resolution: int):
         x_range = sorted(x_coords)
 
         if x_coords[0] == x_coords[1]:  # case one: vertical line
-            output[:, y_coords[0]] = 1
+            output[:, x_coords[0]] = 1
             return output
 
         elif y_coords[0] == y_coords[1]:  # case two: horizontal line
-            output[x_coords[0]] = 1
+            output[y_coords[0]] = 1
             return output
 
+        # TODO: Implement np.array.diagonal() to simplify this
         else:
             x_new = list(range(x_range[0], (x_range[1]) + 1))
             f = interp1d(x_coords, y_coords, kind="linear")
