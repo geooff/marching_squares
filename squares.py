@@ -12,7 +12,7 @@ from PIL import Image
 import imageio
 
 image_size = (400, 400)  # The resolution of the final image
-gif_length = 10
+gif_length = 5
 
 resolution = 5
 feature_size = 50
@@ -27,16 +27,15 @@ contour_lookup =  dict(
         (0, None),
         (1, [[(0, ceil((resolution - 1) / 2)), (ceil((resolution - 1) / 2), (resolution - 1))]]),
         (2, [[(ceil((resolution - 1) / 2), (resolution - 1)),((resolution - 1), ceil((resolution - 1) / 2))]]),
-        (3, [[(0, ceil((resolution - 1) / 2)), ((resolution - 1), ceil((resolution - 1) / 2))]]),
+        (3, [[(0, ceil((resolution - 1) / 2)), (resolution, ceil((resolution - 1) / 2))]]),
         (4, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
         (5, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))],[((resolution - 1), ceil((resolution - 1) / 2)),(ceil((resolution - 1) / 2), (resolution - 1))]]),
-        (6, [[(ceil((resolution - 1) / 2), 0), (ceil((resolution - 1) / 2), (resolution - 1))]]),
         (7, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))]]),
         (8, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))]]),
-        (9, [[(ceil((resolution - 1) / 2), 0), (ceil((resolution - 1) / 2), (resolution - 1))]]),
+        (9, [[(ceil((resolution - 1) / 2), 0), (ceil((resolution - 1) / 2), resolution)]]),
         (10, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))],[(ceil((resolution - 1) / 2), (resolution - 1)), (0, ceil((resolution - 1) / 2))]]),
         (11, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
-        (12, [[(0, ceil((resolution - 1) / 2)),(ceil((resolution - 1) / 2), ceil((resolution - 1) / 2))]]),
+        (12, [[(0, ceil((resolution - 1) / 2)),(resolution, ceil((resolution - 1) / 2))]]),
         (13, [[((resolution - 1), ceil((resolution - 1) / 2)),(ceil((resolution - 1) / 2), (resolution - 1))]]),
         (14, [[(0, ceil((resolution - 1) / 2)), (ceil((resolution - 1) / 2), (resolution - 1))]]),
         (15, None),
@@ -99,7 +98,8 @@ def make_square(binary_string: str, resolution: int):
     output = np.zeros((resolution, resolution))
 
     # Convert our binary string into the decimal isoband
-    isoband = contour_lookup[int(binary_string, 2)]
+    isoband_num = int(binary_string, 2)
+    isoband = contour_lookup[isoband_num]
 
     # Return empty grid if isoband is undefined or blank
     if isoband is None:
@@ -109,12 +109,12 @@ def make_square(binary_string: str, resolution: int):
         x_coords, y_coords = zip(*points)
         x_range = sorted(x_coords)
 
-        if x_coords[0] == x_coords[1]:  # case one: vertical line
-            output[:, x_coords[0]] = 1
+        if isoband_num in (6, 9):  # case one: vertical line
+            output[x_coords[0], y_coords[0] : y_coords[1]] = 1
             return output
 
-        elif y_coords[0] == y_coords[1]:  # case two: horizontal line
-            output[y_coords[0]] = 1
+        elif isoband_num in (3, 12):  # case two: horizontal line
+            output[x_coords[0] : x_coords[1], y_coords[0]] = 1
             return output
 
         # TODO: Implement np.array.diagonal() to simplify this
@@ -125,6 +125,8 @@ def make_square(binary_string: str, resolution: int):
 
             for y, x in zip(x_new, y_new):
                 output[x, y] = 1
+    if isoband_num == 14:
+        print(isoband_num, output)
 
     return output
 
@@ -146,7 +148,10 @@ def binary_to_nibble(data, resolution):
     return output
 
 
-def marching_squares_step(step_number, resolution, feature_size, image_size):
+# TODO: Fix issue with indesing on Isobands 1,4,10,11,14
+def marching_squares_step(
+    step_number, resolution, feature_size, image_size, SHOW_GRID=True
+):
     def _preview_image(image_size, data, resolution):
         im = Image.new("1", image_size)
         for x_idx, row in enumerate(data):
@@ -162,6 +167,7 @@ def marching_squares_step(step_number, resolution, feature_size, image_size):
         return im
 
     surface = np.zeros(image_size)
+
     binary_noise = make_binary_noise(
         step_number, grid, resolution, feature_size, noise_speed
     )
@@ -173,6 +179,10 @@ def marching_squares_step(step_number, resolution, feature_size, image_size):
                 x_idx * resolution : (x_idx + 1) * resolution,
                 y_idx * resolution : (y_idx + 1) * resolution,
             ] = make_square(value, resolution)
+
+    if SHOW_GRID:
+        for ix, iy in np.ndindex(binary_noise.shape):
+            surface[ix * resolution, iy * resolution] = binary_noise[ix, iy]
 
     return return_image(image_size, surface, resolution)
 
