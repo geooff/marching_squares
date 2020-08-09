@@ -30,6 +30,7 @@ contour_lookup =  dict(
         (3, [[(0, ceil((resolution - 1) / 2)), (resolution, ceil((resolution - 1) / 2))]]),
         (4, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
         (5, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))],[((resolution - 1), ceil((resolution - 1) / 2)),(ceil((resolution - 1) / 2), (resolution - 1))]]),
+        (6, [[(ceil((resolution - 1) / 2), 0), (ceil((resolution - 1) / 2), resolution)]]),
         (7, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))]]),
         (8, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))]]),
         (9, [[(ceil((resolution - 1) / 2), 0), (ceil((resolution - 1) / 2), resolution)]]),
