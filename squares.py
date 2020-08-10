@@ -12,9 +12,9 @@ from PIL import Image
 import imageio
 
 image_size = (400, 400)  # The resolution of the final image
-gif_length = 5
+gif_length = 10
 
-resolution = 5
+resolution = 10
 feature_size = 50
 noise_speed = 0.05
 
@@ -24,21 +24,23 @@ grid = tuple(int(x / resolution) for x in image_size)
 # fmt: off
 contour_lookup =  dict(
     [
+        # 1,4,11,14 were all experiencing indexing errors
+        # Easiest fix was just to swap them, this shouldn't work but it does
         (0, None),
-        (1, [[(0, ceil((resolution - 1) / 2)), (ceil((resolution - 1) / 2), (resolution - 1))]]),
+        (4, [[(0, ceil((resolution - 1) / 2)), (ceil((resolution - 1) / 2), (resolution - 1))]]),
         (2, [[(ceil((resolution - 1) / 2), (resolution - 1)),((resolution - 1), ceil((resolution - 1) / 2))]]),
         (3, [[(0, ceil((resolution - 1) / 2)), (resolution, ceil((resolution - 1) / 2))]]),
-        (4, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
+        (1, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
         (5, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))],[((resolution - 1), ceil((resolution - 1) / 2)),(ceil((resolution - 1) / 2), (resolution - 1))]]),
         (6, [[(ceil((resolution - 1) / 2), 0), (ceil((resolution - 1) / 2), resolution)]]),
         (7, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))]]),
         (8, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))]]),
         (9, [[(ceil((resolution - 1) / 2), 0), (ceil((resolution - 1) / 2), resolution)]]),
         (10, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))],[(ceil((resolution - 1) / 2), (resolution - 1)), (0, ceil((resolution - 1) / 2))]]),
-        (11, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
+        (14, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
         (12, [[(0, ceil((resolution - 1) / 2)),(resolution, ceil((resolution - 1) / 2))]]),
         (13, [[((resolution - 1), ceil((resolution - 1) / 2)),(ceil((resolution - 1) / 2), (resolution - 1))]]),
-        (14, [[(0, ceil((resolution - 1) / 2)), (ceil((resolution - 1) / 2), (resolution - 1))]]),
+        (11, [[(0, ceil((resolution - 1) / 2)), (ceil((resolution - 1) / 2), (resolution - 1))]]),
         (15, None),
         ]
 )
@@ -126,20 +128,32 @@ def make_square(binary_string: str, resolution: int):
 
             for y, x in zip(x_new, y_new):
                 output[x, y] = 1
-    if isoband_num == 14:
-        print(isoband_num, output)
 
     return output
 
 
-def binary_to_nibble(data, resolution):
+def binary_to_nibble(data, resolution: int):
+    """Calculate the Isobands for a 2D field of binary noise
+
+    Args:
+        data (nd.array): Array of binary data
+        resolution (int): Scaling factor to be used in converting grid to image
+
+    Returns:
+        str: binary nibble formatted as string containing output
+    """
+    # Calculate the grid size and create of the output array
     offset_grid = tuple(int(x - 1) for x in grid)
     output = np.zeros(offset_grid, dtype=np.dtype(("U", 4)))
+
+    # Iterate over output array, calculate binary nibbles for each idx
     for ix, iy in np.ndindex(output.shape):
 
+        # Skip the ends of rows and cols where isoband is undefined
         if ix == len(data) - 1 or iy == len(data) - 1:
             continue
 
+        # Calculate nibble by using clockwise index
         output[ix, iy] = (
             str(data[ix][iy])
             + str(data[ix + 1][iy])
@@ -149,7 +163,6 @@ def binary_to_nibble(data, resolution):
     return output
 
 
-# TODO: Fix issue with indesing on Isobands 1,4,10,11,14
 def marching_squares_step(
     step_number, resolution, feature_size, image_size, SHOW_GRID=True
 ):
