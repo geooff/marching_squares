@@ -12,9 +12,9 @@ from PIL import Image
 import imageio
 
 image_size = (400, 400)  # The resolution of the final image
-gif_length = 10
+gif_length = 100
 
-resolution = 10
+resolution = 5
 feature_size = 50
 noise_speed = 0.05
 
@@ -24,23 +24,21 @@ grid = tuple(int(x / resolution) for x in image_size)
 # fmt: off
 contour_lookup =  dict(
     [
-        # 1,4,11,14 were all experiencing indexing errors
-        # Easiest fix was just to swap them, this shouldn't work but it does
         (0, None),
-        (4, [[(0, ceil((resolution - 1) / 2)), (ceil((resolution - 1) / 2), (resolution - 1))]]),
+        (1, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
         (2, [[(ceil((resolution - 1) / 2), (resolution - 1)),((resolution - 1), ceil((resolution - 1) / 2))]]),
         (3, [[(0, ceil((resolution - 1) / 2)), (resolution, ceil((resolution - 1) / 2))]]),
-        (1, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
+        (4, [[(0, ceil((resolution - 1) / 2)), (ceil((resolution - 1) / 2), (resolution - 1))]]),
         (5, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))],[((resolution - 1), ceil((resolution - 1) / 2)),(ceil((resolution - 1) / 2), (resolution - 1))]]),
         (6, [[(ceil((resolution - 1) / 2), 0), (ceil((resolution - 1) / 2), resolution)]]),
         (7, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))]]),
         (8, [[(ceil((resolution - 1) / 2), 0), (0, ceil((resolution - 1) / 2))]]),
         (9, [[(ceil((resolution - 1) / 2), 0), (ceil((resolution - 1) / 2), resolution)]]),
         (10, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))],[(ceil((resolution - 1) / 2), (resolution - 1)), (0, ceil((resolution - 1) / 2))]]),
-        (14, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
+        (11, [[(0, ceil((resolution - 1) / 2)), (ceil((resolution - 1) / 2), (resolution - 1))]]),
         (12, [[(0, ceil((resolution - 1) / 2)),(resolution, ceil((resolution - 1) / 2))]]),
         (13, [[((resolution - 1), ceil((resolution - 1) / 2)),(ceil((resolution - 1) / 2), (resolution - 1))]]),
-        (11, [[(0, ceil((resolution - 1) / 2)), (ceil((resolution - 1) / 2), (resolution - 1))]]),
+        (14, [[(ceil((resolution - 1) / 2), 0), ((resolution - 1), ceil((resolution - 1) / 2))]]),
         (15, None),
         ]
 )
